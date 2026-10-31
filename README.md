@@ -12,33 +12,21 @@ Install [Bazelisk](https://bazel.build/install/bazelisk). It reads `.bazelversio
 
 ---
 
-#### Everyday Commands
-
-| Goal | Command |
-| --- | --- |
-| Compile production code | `bazel build //:entrypoint` |
-| Unit tests only | `bazel test //:all_tests` |
-| Checkstyle and SpotBugs | `bazel test //:checkstyle //:spotbugs` |
-| Coverage | `bazel coverage //:all_tests --combined_report=lcov` |
-| Package without checks | `bazel build //:app_bin_deploy.jar` |
-| Full verification | `bazel build //... //:app_bin_deploy.jar && bazel test //... && bazel coverage //:all_tests --combined_report=lcov` |
-| Clean outputs | `bazel clean` |
-| List targets | `bazel query //...` |
-
-Tests and packaging compile their prerequisites automatically. Coverage measures `//:app`, excluding the entrypoint and composition; no minimum is enforced.
-
-Run one test class, or one method:
-
 ```sh
-bazel test //:all_tests --test_arg='--include-classname=io\.template\.samplebusinesslayer\.CalculatorTest'
-bazel test //:all_tests --test_arg='--include-classname=io\.template\.samplebusinesslayer\.CalculatorTest' --test_arg='--include-methodname=.*throwsOnDivisionByZero'
+bazel run //:release
 ```
+
+Compiles and runs unit tests with coverage, then runs Checkstyle and SpotBugs and packages the application JAR without coverage instrumentation. Nothing is published or deployed.
+
+OCI image assembly is separate from release for the materializer/CD flow.
+
+Coverage measures `//:app`, excluding the entrypoint and composition; no minimum is enforced. The report is copied before packaging changes Bazel's output links.
 
 #### Outputs
 
 - Application JAR: `bazel-bin/app_bin_deploy.jar`.
 - Test logs: `bazel-testlogs/<target>/test.log`.
-- Combined coverage: `$(bazel info output_path)/_coverage/_coverage_report.dat`.
+- Combined coverage: `coverage/lcov.dat`.
 
 ### 3. Development Workflows
 
@@ -48,7 +36,7 @@ bazel test //:all_tests --test_arg='--include-classname=io\.template\.samplebusi
 
 - Add/remove: edit Maven coordinates in `MODULE.bazel` and the consuming target's `deps` in `BUILD.bazel`.
 - Upgrade/pin: change the explicit artifact version or its declared BOM version in `MODULE.bazel`.
-- Refresh locks: `REPIN=1 bazel run @maven//:pin`; review `maven_install.json` with the declarations, then build and test.
+- Refresh locks: `REPIN=1 bazel run @maven//:pin`; review `maven_install.json` with the declarations, then run release.
 - Inspect resolved versions/conflicts: check `artifacts`, `dependencies`, and `conflict_resolution` in `maven_install.json`. Trace a target's dependency path with:
 
 ```sh
@@ -58,7 +46,7 @@ bazel query 'somepath(//:app, @maven//:org_slf4j_slf4j_api)'
 #### Toolchain Changes
 
 - Bazel: `.bazelversion`; Java language/runtime versions: `.bazelrc`.
-- Bazel rules: `MODULE.bazel`. Refresh `MODULE.bazel.lock` with `bazel mod deps --lockfile_mode=update`, then run full verification.
+- Bazel rules: `MODULE.bazel`. Refresh `MODULE.bazel.lock` with `bazel mod deps --lockfile_mode=update`, then run release.
 
 ### 4. IDE Setup
 

@@ -1,4 +1,4 @@
-load("//:custom-rules.bzl", "checkstyle_test", "java_runtime_files", "spotbugs_test")
+load("//:custom-rules.bzl", "java_runtime_files")
 load("@rules_java//java:defs.bzl", "java_binary", "java_library", "java_test")
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
 load("@rules_oci//oci:defs.bzl", "oci_image", "oci_image_index", "oci_load")
@@ -196,22 +196,10 @@ java_binary(
     runtime_deps = ["@maven//:com_github_spotbugs_spotbugs"],
 )
 
-checkstyle_test(
-    name = "checkstyle",
-    srcs = [
-        ":all_tests",
-        ":app",
-        ":composition",
-        ":entrypoint",
-    ],
-)
-
-spotbugs_test(
-    name = "spotbugs",
-    srcs = [
-        ":all_tests",
-        ":app",
-        ":composition",
-        ":entrypoint",
-    ],
+genrule(
+    name = "release",
+    srcs = ["release.sh"],
+    outs = ["release-runner"],
+    cmd = "cp $< $@ && chmod +x $@",
+    executable = True,
 )
