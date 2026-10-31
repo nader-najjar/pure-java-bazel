@@ -1,5 +1,4 @@
 load("@aspect_rules_lint//lint:checkstyle.bzl", "lint_checkstyle_aspect")
-load("@aspect_rules_lint//lint:lint_test.bzl", "lint_test")
 load("@aspect_rules_lint//lint:spotbugs.bzl", "lint_spotbugs_aspect")
 load("@rules_java//java/common:java_common.bzl", "java_common")
 load("@rules_pkg//pkg:providers.bzl", "PackageFilesInfo")
@@ -7,16 +6,13 @@ load("@rules_pkg//pkg:providers.bzl", "PackageFilesInfo")
 checkstyle = lint_checkstyle_aspect(
     binary = Label("//:checkstyle_bin"),
     config = Label("//:checkstyle-configuration.xml"),
-    rule_kinds = ["java_library", "java_test"],
+    rule_kinds = ["java_library", "java_test"]
 )
 
 spotbugs = lint_spotbugs_aspect(
     binary = Label("//:spotbugs_bin"),
-    exclude_filter = Label("//:spotbugs-configuration.xml"),
+    exclude_filter = Label("//:spotbugs-configuration.xml")
 )
-
-checkstyle_test = lint_test(aspect = checkstyle)
-spotbugs_test = lint_test(aspect = spotbugs)
 
 def _java_runtime_files_impl(ctx):
     runtime = ctx.attr.runtime[java_common.JavaRuntimeInfo]
